@@ -22,7 +22,7 @@ with Diagram("Pixel Streaming Backend", show=True, direction="LR", filename="inf
         signaling_rest = APIGateway("Signaling REST API")
 
         with Cluster("EKS"):
-            api = EKS("CineV API")
+            api = EKS("External API")
             api >> signaling_rest
 
         websocket_handler = Lambda("Websocket Handler")
