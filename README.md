@@ -263,6 +263,15 @@ Document the **implemented** system for future maintenance, onboarding, and know
 
 > 💡 **Key Insight**: This approach ensures documentation accuracy by tying it directly to the codebase lifecycle.
 
+### Example Documents
+📁 **See [`readme-examples/`](./readme-examples/) directory for detailed examples:**
+- Complete README.md files from real projects
+- Different system types and complexity levels
+- Best practices for living documentation
+- Templates for various project categories
+
+*These examples demonstrate how to create comprehensive, maintainable documentation that evolves with your codebase.*
+
 ---
 
 *This process ensures comprehensive documentation throughout the development lifecycle, from initial design to final implementation, facilitating better communication, planning, and long-term maintainability.*
