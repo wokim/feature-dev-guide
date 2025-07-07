@@ -5,6 +5,18 @@
 
 ---
 
+## 🚀 Quick Start - Example Files
+
+| Phase | Example Directory | What You'll Find |
+|-------|------------------|------------------|
+| **Phase 1: Technical Design** | [`technical-design-docs/`](./technical-design-docs/) | Complete design documents, system architecture examples |
+| **Phase 2: Task Breakdown** | See examples in Phase 2 section | User stories, task planning templates, Gantt charts |
+| **Phase 3: Implementation** | [`readme-examples/`](./readme-examples/) | Real README.md files, living documentation examples |
+
+**💡 Start Here**: Browse the example directories above to see the process in action before reading the detailed guide below.
+
+---
+
 ## Table of Contents
 
 - [Overview](#overview)
