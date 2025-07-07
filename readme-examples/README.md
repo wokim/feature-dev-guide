@@ -36,7 +36,7 @@ Key features include:
 - Scalable infrastructure using AWS serverless technologies
 - Secure streamer connections with IP whitelisting
 - Intelligent player queuing system for high-demand scenarios
-- Integration with Alibaba Cloud ECS for hosting streaming workers
+- Integration with Cloud Provider ECS for hosting streaming workers
 - RESTful API for managing streaming instances
 
 Whether you're building a cloud gaming platform, a virtual production environment, or any application requiring high-quality, low-latency streaming of 3D content, Pixel Streaming Backend provides the necessary infrastructure to handle your signaling needs efficiently.
@@ -48,7 +48,7 @@ sequenceDiagram
     participant Streamer
     participant Signalling as Signaling Server
     participant Player
-    participant api as CineV API
+    participant api as External API
 
     Streamer->>Signalling: Open Connection
     Note right of Streamer: Initializing
@@ -138,13 +138,13 @@ When establishing a WebSocket connection, the following query parameters are use
 | Parameter  | Description                                                                                                                   | Required          | Default    |
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------- | ----------------- | ---------- |
 | type       | Specifies the client type. Can be either 'player' or 'streamer'.                                                              | No                | 'streamer' |
-| token      | Authentication token issued by cinev-auth. The userId field from the token payload is used as the playerId.                   | Yes (for players) | N/A        |
-| projectUrl | URL-encoded path to the project file to be loaded by the streamer when a player connects for cloud streaming of CineV Studio. | Yes (for players) | N/A        |
+| token      | Authentication token issued by auth-service. The userId field from the token payload is used as the playerId.                | Yes (for players) | N/A        |
+| projectUrl | URL-encoded path to the project file to be loaded by the streamer when a player connects for cloud streaming of Studio App.  | Yes (for players) | N/A        |
 
 Example player connection URL:
 
 ```
-wss://your-api-gateway-url?type=player&token=your-auth-token&projectUrl=https%3A%2F%2Fcinev-shorts.oss-ap-northeast-2.aliyuncs.com%2Fcinev%2Fdev%2Fproject%2F00069c00-1591-4c74-a6cf-5eb96645220d.project
+wss://your-api-gateway-url?type=player&token=your-auth-token&projectUrl=https%3A%2F%2Fexample-bucket.region.provider.com%2Fcompany%2Fdev%2Fproject%2F00069c00-1591-4c74-a6cf-5eb96645220d.project
 ```
 
 Note: The projectUrl must be `URL-encoded` to ensure proper transmission of the full URL as a query parameter.
@@ -157,15 +157,15 @@ The infrastructure for the project consists of the following components:
 | Component         | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | API Gateways      | - API Gateway WebSocket for signaling (both player and streamer connections)<br>- API Gateway (REST) for signaling HTTP endpoints                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| Lambda Handlers   | - WebSocket API Gateway has lambda handlers for `$connect`, `$disconnect`, and `message` processing for both players and streamers.<br>- The HTTP API Gateway has lambda handlers to process REST endpoints. These handlers:<br> • Use the Alibaba SDK to manage ECS instances (create, delete, start, reboot, query)<br> • Handle project save and video generation requests from cinev-api and forward them to streaming workers                                                                                                                                                                                                                                                                                                                                                                  |
+| Lambda Handlers   | - WebSocket API Gateway has lambda handlers for `$connect`, `$disconnect`, and `message` processing for both players and streamers.<br>- The HTTP API Gateway has lambda handlers to process REST endpoints. These handlers:<br> • Use the Cloud Provider SDK to manage ECS instances (create, delete, start, reboot, query)<br> • Handle project save and video generation requests from external-api and forward them to streaming workers                                                                                                                                                                                                                                                                                                                                                    |
 | DynamoDB          | Used as the primary storage system for player and streamer data.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | Step Functions    | - During the `$connect` handler for players and streamers, after the connection is established, a message of type `config` needs to be sent to each player and streamer. However, at the time the `$connect` handler is invoked, the WebSocket connection in API Gateway is not yet fully established.<br>- In the `$connect` handler for players and streamers, a Step Function is triggered.<br>- This Step Function is configured to wait for 2 seconds before executing, allowing time for the WebSocket connection to fully establish.<br>- After the delay, the Step Function sends the `config` message to the respective player or streamer through the WebSocket connection.<br>- This approach ensures that the `config` message is sent only after the connection is likely to be ready. |
-| Alibaba Cloud ECS | Hosts the streaming workers that handle the actual pixel streaming tasks.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| CineV API         | Interacts with the signaling HTTP API Gateway to initiate operations like project saves and video generation requests.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Cloud Provider ECS | Hosts the streaming workers that handle the actual pixel streaming tasks.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| External API       | Interacts with the signaling HTTP API Gateway to initiate operations like project saves and video generation requests.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 
 ## Data Modeling
 
-DynamoDB is used as the storage system, and the data schemas can be found in the [`src/signaling-server/models`](src/signaling-server/models) directory.
+DynamoDB is used as the storage system, and the data schemas can be found in the [`src/models`](src/models) directory.
 
 | Table name            | Description                                                                                                                                                                                                                                                                                                                |
 | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -209,18 +209,18 @@ The Signaling HTTP endpoints are built using AWS API Gateway and Lambda function
 
 | API                                | Description                                                                      |
 | ---------------------------------- | -------------------------------------------------------------------------------- |
-| POST /api/instances                | This endpoint uses the Alibaba SDK to create new ECS instances on Alibaba Cloud. |
-| DELETE /api/instances/{instanceId} | This endpoint deletes the specified ECS instance using the Alibaba SDK.          |
+| POST /api/instances                | This endpoint uses the Cloud Provider SDK to create new ECS instances on the cloud. |
+| DELETE /api/instances/{instanceId} | This endpoint deletes the specified ECS instance using the Cloud Provider SDK.      |
 | GET /docs                          | Swagger Docs                                                                     |
 
 ### Streamer WebSocket Security Flow
 
 ```mermaid
 sequenceDiagram
-   participant BO as CineV API
+   participant BO as External API
    participant AG as API Gateway (Signaling HTTP)
-   participant L as Lambda (with Alibaba SDK)
-   participant ECS as Alibaba ECS (Streamer Instance)
+   participant L as Lambda (with Cloud SDK)
+   participant ECS as Cloud Provider ECS (Streamer Instance)
    participant IW as IP Whitelist
    participant SS as Signaling Server (Websocket)
 
@@ -267,8 +267,8 @@ sequenceDiagram
     participant P as Player
     participant SS as Signaling Server
 
-    S->>S: Restart CineV Studio Instance
-    S->>S: Launch CineV Studio
+    S->>S: Restart Studio Instance
+    S->>S: Launch Studio Application
     S->>SS: Establish WebSocket Connection
     Note right of S: Initializing
     SQS->>DB: Check Player Queue
@@ -303,7 +303,7 @@ sequenceDiagram
 ```
 
 - When a streamer is done with a session, it is restarted, which automatically disconnects the WebSocket connection, and the streamer is removed from the streamers table.
-- During the restart process, the CineV studio is automatically launched on the streamer's Alibaba ECS instance by `Streaming Worker`, and a new WebSocket connection is established.
+- During the restart process, the Studio Application is automatically launched on the streamer's Cloud Provider ECS instance by `Streaming Worker`, and a new WebSocket connection is established.
 - In the Step Function handler, which sends delayed `config` messages to the connected streamers, the player queue is checked. If there are players waiting in the queue, the oldest player is selected, and a `playerConnected` message is sent to the streamer. The mapping information between the player and the streamer is then recorded in the database.
 - When a player makes a `listStreamers` request, they receive a response containing a list of streamer IDs. If the array contains only one fixed streamer ID value called `waiting_queue`, the player determines that they have entered the waiting queue. Subsequently, when the player sends a `subscribe()` message to the signaling server, they include `waiting_queue` as the streamer ID. The signaling server then adds the player to the waiting queue.
 - If, due to timing issues, the selected streamer becomes unavailable during the player's subscription process, the signaling server will choose another available streamer. If no streamers are available, the player is added to the waiting queue.
@@ -349,7 +349,7 @@ Follow these steps to get your development environment running:
 1. Clone the repository to your local machine:
 
    ```sh
-   git clone https://github.com/CINEV/pixel-streaming-backend.git
+   git clone https://github.com/your-org/pixel-streaming-backend.git
    ```
 
 2. Change into the project directory:
