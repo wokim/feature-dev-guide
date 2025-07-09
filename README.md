@@ -116,6 +116,8 @@ Define **what** to build based on requirements analysis, providing a comprehensi
 
 ## Phase 2: User Stories & Task Breakdown
 
+> User stories often come from the business side — through proposals or product planning
+
 ### Purpose
 Transform technical design into user-centered goals (User Stories) and actionable development tasks, bridging the gap between business requirements and implementation.
 
