@@ -66,6 +66,8 @@ graph TD
 
 ## Phase 1: Technical Design Document
 
+> This document helps define the core context, architecture, and technical approach for a feature. It avoids low-level code details and instead focuses on stable elements like service design, infra, scaling, and observability — providing a shared understanding before development begins.
+
 ### Purpose
 Define **what** to build based on requirements analysis, providing a comprehensive blueprint for development.
 
