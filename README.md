@@ -22,7 +22,7 @@
 - [Overview](#overview)
 - [Development Process Flow](#development-process-flow)
 - [Phase 1: Technical Design Document](#phase-1-technical-design-document)
-- [Phase 2: User Stories & Task Breakdown](#phase-2-user-stories--task-breakdown)
+- [Phase 2: Task Breakdown](#phase-2-task-breakdown)
 - [Phase 3: Implementation Documentation](#phase-3-implementation-documentation)
 
 ---
@@ -114,7 +114,7 @@ Define **what** to build based on requirements analysis, providing a comprehensi
 
 ---
 
-## Phase 2: User Stories & Task Breakdown
+## Phase 2: Task Breakdown
 
 > User stories often come from the business side — through proposals or product planning
 
